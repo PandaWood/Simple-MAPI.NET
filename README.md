@@ -3,6 +3,12 @@ A .NET wrapper around Simple MAPI - a set of functions and related data structur
 
 This project originated from the article [Simple-MAPI-NET](https://www.codeproject.com/Articles/2048/Simple-MAPI-NET) on CodeProject site
 
+### The nuget package
+ [![NuGet](https://img.shields.io/nuget/v/Simple-MAPI.NET.svg)](https://www.nuget.org/packages/Simple-MAPI.NET/)
+```
+PM> Install-Package Simple-MAPI.NET
+```
+
 ## What does it do?
 
 Basically allows you to setup email messages using the default email client on the user's (Windows-based) machine. 
