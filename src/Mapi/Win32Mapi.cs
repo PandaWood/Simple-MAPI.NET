@@ -1,7 +1,5 @@
 /*
 Simple MAPI.NET
-This class is based on code from https://www.codeproject.com/Articles/2048/Simple-MAPI-NET
-by netmaster@swissonline.ch
 */
 
 
@@ -269,8 +267,7 @@ namespace Win32Mapi
 		{
 			aat = null;
 			IntPtr ptrmsg = IntPtr.Zero;
-			error = MAPIReadMail(session, winhandle, id,
-			                     MapiPeek | MapiSuprAttach, 0, ref ptrmsg);
+			error = MAPIReadMail(session, winhandle, id, MapiPeek | MapiSuprAttach, 0, ref ptrmsg);
 			if ((error != 0) || (ptrmsg == IntPtr.Zero))
 				return null;
 
@@ -293,8 +290,7 @@ namespace Win32Mapi
 		public bool SaveAttachm(string id, string name, string savepath)
 		{
 			IntPtr ptrmsg = IntPtr.Zero;
-			error = MAPIReadMail(session, winhandle, id,
-			                     MapiPeek, 0, ref ptrmsg);
+			error = MAPIReadMail(session, winhandle, id, MapiPeek, 0, ref ptrmsg);
 			if ((error != 0) || (ptrmsg == IntPtr.Zero))
 				return false;
 

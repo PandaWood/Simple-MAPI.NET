@@ -6,10 +6,9 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{32F7B95D-10A0-4A0A-AF04-DFB1CA7C7E43}</ProjectGuid>
     <OutputType>Library</OutputType>
-    <RootNamespace>Mapi</RootNamespace>
+    <RootNamespace>Win32Mapi</RootNamespace>
     <AssemblyName>Mapi</AssemblyName>
     <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
-    <PackOnBuild>true</PackOnBuild>
     <PackageId>Simple-MAPI.NET</PackageId>
     <PackageVersion>1.0</PackageVersion>
     <Authors>Peter van der Woude</Authors>
@@ -18,9 +17,12 @@
     <Owners>Peter van der Woude, NETMaster</Owners>
     <PackageProjectUrl>https://github.com/PandaWood/Simple-MAPI.NET</PackageProjectUrl>
     <Summary>A .NET wrapper around Simple MAPI</Summary>
-    <PackageTags>mapi </PackageTags>
+    <PackageTags>mapi, simple-mapi</PackageTags>
     <Title>Simple-MAPI.NET</Title>
     <Description>A .NET wrapper around Simple MAPI - a set of functions and related data structures to add messaging functionality to Windows-based apps</Description>
+    <ReleaseVersion>1.0</ReleaseVersion>
+    <SynchReleaseVersion>false</SynchReleaseVersion>
+    <PackageReleaseNotes>This is the initial release, based on working code extracted from another project (ExceptionReport.NET).</PackageReleaseNotes>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
