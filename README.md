@@ -13,5 +13,12 @@ PM> Install-Package Simple-MAPI.NET
 
 Basically allows you to setup email messages using the default email client on the user's (Windows-based) machine. 
 
-Set a subject, body and attachments via a simple (M)API, which then invokes the default email client (eg Outlook) with the message, ready to send.
+Set a subject, body and attachments via a simple (M)API, which then invokes the default email client (eg Outlook/Windows Mail) with the message, ready to send.
 
+## History
+
+I found this source code being relied on within the [ExceptionReporter.NET](https://github.com/PandaWood/ExceptionReporter.NET) project.
+
+It had been copied, with internal attribution, from the article on [Simple-MAPI-NET](https://www.codeproject.com/Articles/2048/Simple-MAPI-NET) from the Code Project site.
+
+I have made some changes while the code was in there - some semantic, but at least one was a fix to a problem. I'll try and document this shortly.
