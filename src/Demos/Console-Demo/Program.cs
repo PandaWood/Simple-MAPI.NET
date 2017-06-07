@@ -18,7 +18,7 @@ namespace SimpleMAPI
                 return;
             }
 
-            Mapi ma = new Mapi();
+            SimpleMapi ma = new SimpleMapi();
             if (!ma.Logon(IntPtr.Zero))
             {
                 Console.WriteLine("MAPI Logon failed! : " + ma.Error());

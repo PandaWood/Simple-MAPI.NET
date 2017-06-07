@@ -38,7 +38,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\Mapi\Mapi.csproj">
       <Project>{32F7B95D-10A0-4A0A-AF04-DFB1CA7C7E43}</Project>
-      <Name>Mapi</Name>
+      <Name>Simple-Mapi</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

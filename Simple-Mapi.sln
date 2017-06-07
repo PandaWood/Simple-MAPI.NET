@@ -1,7 +1,7 @@
 
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mapi", "src\Mapi\Mapi.csproj", "{32F7B95D-10A0-4A0A-AF04-DFB1CA7C7E43}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Simple-Mapi", "src\Mapi\Simple-Mapi.csproj", "{32F7B95D-10A0-4A0A-AF04-DFB1CA7C7E43}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Console-Demo", "src\Demos\Console-Demo\Console-Demo.csproj", "{3C2D628F-1F61-40EE-86CA-A8B0CD6E8438}"
 EndProject

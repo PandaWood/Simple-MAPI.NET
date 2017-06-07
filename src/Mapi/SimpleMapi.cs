@@ -14,7 +14,7 @@ namespace Win32Mapi
 {
 #pragma warning disable 1591
 
-	public class Mapi
+	public class SimpleMapi
 	{
 		private const int MAPI_DIALOG = 8;
 
