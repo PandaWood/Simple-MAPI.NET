@@ -1,5 +1,6 @@
 /*
 Simple MAPI.NET
+https://github.com/PandaWood/Simple-MAPI.NET
 */
 
 
