@@ -6,11 +6,10 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{32F7B95D-10A0-4A0A-AF04-DFB1CA7C7E43}</ProjectGuid>
     <OutputType>Library</OutputType>
-    <RootNamespace>Win32Mapi</RootNamespace>
-    <AssemblyName>Mapi</AssemblyName>
+    <AssemblyName>SimpleMapi</AssemblyName>
     <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
     <PackageId>Simple-MAPI.NET</PackageId>
-    <PackageVersion>1.0</PackageVersion>
+    <PackageVersion>1.0.1</PackageVersion>
     <Authors>Peter van der Woude</Authors>
     <NeutralLanguage>en-US</NeutralLanguage>
     <PackageLicenseUrl>https://github.com/PandaWood/Simple-MAPI.NET/blob/master/LICENSE</PackageLicenseUrl>
@@ -20,9 +19,9 @@
     <PackageTags>mapi, simple-mapi</PackageTags>
     <Title>Simple-MAPI.NET</Title>
     <Description>A .NET wrapper around Simple MAPI - a set of functions and related data structures to add messaging functionality to Windows-based apps</Description>
-    <ReleaseVersion>1.0</ReleaseVersion>
-    <SynchReleaseVersion>false</SynchReleaseVersion>
-    <PackageReleaseNotes>This is the initial release, based on working code extracted from another project (ExceptionReport.NET).</PackageReleaseNotes>
+    <ReleaseVersion>1.0.1</ReleaseVersion>
+    <PackageReleaseNotes>A small but breaking  change to the class name from Mapi to SimpleMapi and some associated clarifications in the solution/code.
+Please change class usage from 'Mapi' to 'SimpleMapi' (same namespace Win32Mapi)</PackageReleaseNotes>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -40,6 +39,7 @@
     <OutputPath>bin\Release</OutputPath>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <DocumentationFile>bin\Release\SimpleMapi.xml</DocumentationFile>
     <ConsolePause>false</ConsolePause>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>

@@ -30,4 +30,11 @@ Global
 		{3C2D628F-1F61-40EE-86CA-A8B0CD6E8438}.Release|x86.ActiveCfg = Release|x86
 		{3C2D628F-1F61-40EE-86CA-A8B0CD6E8438}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
+	GlobalSection(MonoDevelopProperties) = preSolution
+		Policies = $0
+		$0.DotNetNamingPolicy = $1
+		$1.DirectoryNamespaceAssociation = PrefixedHierarchical
+		description = A .NET wrapper around Simple MAPI - a set of functions and related data structures to add messaging functionality to Windows-based apps
+		version = 1.0.1
+	EndGlobalSection
 EndGlobal
