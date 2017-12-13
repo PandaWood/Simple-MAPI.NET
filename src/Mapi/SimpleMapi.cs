@@ -94,7 +94,7 @@ namespace Win32Mapi
 			recpts.Add(dest);
 		}
 
-        public void AddRecipientBCC(string name, string addr, bool cc)
+        public void AddRecipientBCC(string name, string addr)
         {
             var dest = new MapiRecipDesc { recipClass = MapiBCC, name = name, address = addr };
             recpts.Add(dest);
