@@ -131,10 +131,11 @@ namespace Win32Mapi
 			int rsize = Marshal.SizeOf(rtype);
 			IntPtr ptrr = Marshal.AllocHGlobal(recpts.Count*rsize);
 
-			var runptr = (int) ptrr;
+			var runptr = ptrr.ToInt64();
 			for (int i = 0; i < recpts.Count; i++)
 			{
-				Marshal.StructureToPtr(recpts[i] as MapiRecipDesc, (IntPtr) runptr, false);
+                var ptrDest = new IntPtr(runptr);
+				Marshal.StructureToPtr(recpts[i] as MapiRecipDesc, ptrDest, false);
 				runptr += rsize;
 			}
 
@@ -155,13 +156,14 @@ namespace Win32Mapi
 			IntPtr ptra = Marshal.AllocHGlobal(attachs.Count*asize);
 
 			var mfd = new MapiFileDesc {position = (-1)};
-			var runptr = (int) ptra;
+			var runptr = ptra.ToInt64();
 			for (int i = 0; i < attachs.Count; i++)
 			{
 				var path = attachs[i] as string;
 				mfd.name = Path.GetFileName(path);
 				mfd.path = path;
-				Marshal.StructureToPtr(mfd, (IntPtr) runptr, false);
+			    var ptrDest = new IntPtr(runptr);
+				Marshal.StructureToPtr(mfd, ptrDest, false);
 				runptr += asize;
 			}
 
