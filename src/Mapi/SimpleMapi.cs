@@ -134,7 +134,7 @@ namespace Win32Mapi
 			var runptr = ptrr.ToInt64();
 			for (int i = 0; i < recpts.Count; i++)
 			{
-                var ptrDest = new IntPtr(runptr);
+				var ptrDest = new IntPtr(runptr);
 				Marshal.StructureToPtr(recpts[i] as MapiRecipDesc, ptrDest, false);
 				runptr += rsize;
 			}
@@ -162,7 +162,7 @@ namespace Win32Mapi
 				var path = attachs[i] as string;
 				mfd.name = Path.GetFileName(path);
 				mfd.path = path;
-			    var ptrDest = new IntPtr(runptr);
+				var ptrDest = new IntPtr(runptr);
 				Marshal.StructureToPtr(mfd, ptrDest, false);
 				runptr += asize;
 			}
@@ -184,10 +184,11 @@ namespace Win32Mapi
 
 			if (lastMsg.recips != IntPtr.Zero)
 			{
-				var runptr = (int) lastMsg.recips;
+				var runptr = lastMsg.recips.ToInt64();
 				for (int i = 0; i < lastMsg.recipCount; i++)
 				{
-					Marshal.DestroyStructure((IntPtr) runptr, rtype);
+					var ptrDest = new IntPtr(runptr);
+					Marshal.DestroyStructure(ptrDest, rtype);
 					runptr += rsize;
 				}
 				Marshal.FreeHGlobal(lastMsg.recips);
@@ -198,10 +199,11 @@ namespace Win32Mapi
 				Type ftype = typeof (MapiFileDesc);
 				int fsize = Marshal.SizeOf(ftype);
 
-				var runptr = (int) lastMsg.files;
+				var runptr = lastMsg.files.ToInt64();
 				for (int i = 0; i < lastMsg.fileCount; i++)
 				{
-					Marshal.DestroyStructure((IntPtr) runptr, ftype);
+					var ptrDest = new IntPtr(runptr);
+					Marshal.DestroyStructure(ptrDest, ftype);
 					runptr += fsize;
 				}
 				Marshal.FreeHGlobal(lastMsg.files);
@@ -318,10 +320,11 @@ namespace Win32Mapi
 			Type fdtype = typeof (MapiFileDesc);
 			int fdsize = Marshal.SizeOf(fdtype);
 			var fdtmp = new MapiFileDesc();
-			var runptr = (int) lastMsg.files;
+			var runptr = lastMsg.files.ToInt64();
 			for (int i = 0; i < lastMsg.fileCount; i++)
 			{
-				Marshal.PtrToStructure((IntPtr) runptr, fdtmp);
+				var ptrDest = new IntPtr(runptr);
+				Marshal.PtrToStructure(ptrDest, fdtmp);
 				runptr += fdsize;
 				aat[i] = new MailAttach();
 				if (fdtmp.flags == 0)
@@ -339,10 +342,11 @@ namespace Win32Mapi
 			Type fdtype = typeof (MapiFileDesc);
 			int fdsize = Marshal.SizeOf(fdtype);
 			var fdtmp = new MapiFileDesc();
-			var runptr = (int) lastMsg.files;
+			var runptr = lastMsg.files.ToInt64();
 			for (int i = 0; i < lastMsg.fileCount; i++)
 			{
-				Marshal.PtrToStructure((IntPtr) runptr, fdtmp);
+				var ptrDest = new IntPtr(runptr);
+				Marshal.PtrToStructure(ptrDest, fdtmp);
 				runptr += fdsize;
 				if (fdtmp.flags != 0)
 					continue;
