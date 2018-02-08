@@ -34,7 +34,8 @@ Global
 		Policies = $0
 		$0.DotNetNamingPolicy = $1
 		$1.DirectoryNamespaceAssociation = PrefixedHierarchical
+		$0.StandardHeader = $2
 		description = A .NET wrapper around Simple MAPI - a set of functions and related data structures to add messaging functionality to Windows-based apps
-		version = 1.0.1
+		version = 1.1.0
 	EndGlobalSection
 EndGlobal

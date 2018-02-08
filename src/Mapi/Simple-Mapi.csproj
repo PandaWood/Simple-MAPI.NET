@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="packages\NuGet.Build.Packaging.0.1.248\build\NuGet.Build.Packaging.props" Condition="Exists('packages\NuGet.Build.Packaging.0.1.248\build\NuGet.Build.Packaging.props')" />
+  <Import Project="..\..\packages\NuGet.Build.Packaging.0.1.248\build\NuGet.Build.Packaging.props" 
+	Condition="Exists('..\..\packages\NuGet.Build.Packaging.0.1.248\build\NuGet.Build.Packaging.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
@@ -9,7 +10,7 @@
     <AssemblyName>SimpleMapi</AssemblyName>
     <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
     <PackageId>Simple-MAPI.NET</PackageId>
-    <PackageVersion>1.0.1</PackageVersion>
+    <PackageVersion>1.1.0</PackageVersion>
     <Authors>Peter van der Woude</Authors>
     <NeutralLanguage>en-US</NeutralLanguage>
     <PackageLicenseUrl>https://github.com/PandaWood/Simple-MAPI.NET/blob/master/LICENSE</PackageLicenseUrl>
@@ -19,9 +20,10 @@
     <PackageTags>mapi, simple-mapi</PackageTags>
     <Title>Simple-MAPI.NET</Title>
     <Description>A .NET wrapper around Simple MAPI - a set of functions and related data structures to add messaging functionality to Windows-based apps</Description>
-    <ReleaseVersion>1.0.1</ReleaseVersion>
-    <PackageReleaseNotes>A small but breaking  change to the class name from Mapi to SimpleMapi and some associated clarifications in the solution/code.
-Please change class usage from 'Mapi' to 'SimpleMapi' (same namespace Win32Mapi)</PackageReleaseNotes>
+    <ReleaseVersion>1.1.0</ReleaseVersion>
+    <PackageReleaseNotes>fixes: 64-bit compatibility
+features: add BCC recipient</PackageReleaseNotes>
+    <SynchReleaseVersion>false</SynchReleaseVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -54,5 +56,6 @@ Please change class usage from 'Mapi' to 'SimpleMapi' (same namespace Win32Mapi)
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
-  <Import Project="packages\NuGet.Build.Packaging.0.1.248\build\NuGet.Build.Packaging.targets" Condition="Exists('packages\NuGet.Build.Packaging.0.1.248\build\NuGet.Build.Packaging.targets')" />
+  <Import Project="..\..\packages\NuGet.Build.Packaging.0.1.248\build\NuGet.Build.Packaging.targets" 
+	Condition="Exists('..\..\packages\NuGet.Build.Packaging.0.1.248\build\NuGet.Build.Packaging.targets')" />
 </Project>
