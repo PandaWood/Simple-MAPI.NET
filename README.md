@@ -33,10 +33,10 @@ The console demo shows something slightly different, but I have used it, with su
 using Win32Mapi;
 
 .
-var mapi = new Mapi();
+var mapi = new SimpleMapi();
 mapi.AddRecipient(name: "bob@gmail.com", addr: null, cc: false);
-mapi.Attach(filepath: "c:\bob.txt")
-mapi.Send(subject: "a subject", noteText: "a body text")
+mapi.Attach(filepath: "c:\\bob.txt");
+mapi.Send(subject: "a subject", noteText: "a body text");
 ```
 
 I don't use Logon/off() because at least in one case (64-bit Office/Outlook) it just creates a superflous error but sends anyway.
