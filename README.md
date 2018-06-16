@@ -1,7 +1,7 @@
 # Simple-MAPI.NET
 A .NET wrapper around Simple MAPI - a set of functions and related data structures to add messaging functionality to Windows-based apps
 
-This project originated from the article [Simple-MAPI-NET](https://www.codeproject.com/Articles/2048/Simple-MAPI-NET) on CodeProject site
+This project originated from the article [Simple-MAPI-NET](https://www.codeproject.com/Articles/2048/Simple-MAPI-NET) on CodeProject site (though it's worth noting there's a few fixes in this project since the original was imported)
 
 ### The nuget package
  [![NuGet](https://img.shields.io/nuget/v/Simple-MAPI.NET.svg)](https://www.nuget.org/packages/Simple-MAPI.NET/)
@@ -11,15 +11,9 @@ PM> Install-Package Simple-MAPI.NET
 
 ## What does it do?
 
-Basically allows you to setup email messages using the default email client on the user's (Windows-based) machine. 
+Simple MAPI.NET allows you to setup email messages using the default email client on the user's (Windows-based) machine. 
 
 Set a subject, body and attachments and simple (M)API invokes the default email client (eg Outlook/Windows Mail) with the message, ready to send.
-
-## History
-
-I was using this source code within the [ExceptionReporter.NET](https://github.com/PandaWood/ExceptionReporter.NET) project.
-
-It had been copied, with internal attribution, from the article on [Simple-MAPI-NET](https://www.codeproject.com/Articles/2048/Simple-MAPI-NET) from the Code Project site. But I noticed that no one else had committed this code a to a repository, so me to the rescue. And I wanted my ExceptionReport.NET library to use a dependency rather than horde all this unrelated code.
 
 ### Should I use
 Simple MAPI is an old technology and it's basically deprecated - Microsoft warns that the [use of Simple MAPI is discouraged and that it may be unavailable in later versions of Windows](https://msdn.microsoft.com/en-us/library/windows/desktop/dd296734(v=vs.85).aspx)
@@ -33,12 +27,16 @@ The console demo shows something slightly different, but I have used it, with su
 using Win32Mapi;
 
 .
-var mapi = new Mapi();
+var mapi = new SimpleMapi();
 mapi.AddRecipient(name: "bob@gmail.com", addr: null, cc: false);
-mapi.Attach(filepath: "c:\bob.txt")
-mapi.Send(subject: "a subject", noteText: "a body text")
+mapi.Attach(filepath: "c:\\bob.txt");
+mapi.Send(subject: "a subject", noteText: "a body text");
 ```
 
-I don't use Logon/off() because at least in one case (64-bit Office/Outlook) it just creates a superflous error but sends anyway.
+I don't use Logon/off() because at least in one case (64-bit Office/Outlook) it just creates a superflous error but sends anyway - ie removing the call to Logon() still works.
 
-ie removing the call to Logon() still works.
+## History
+
+I was using this source code within the [ExceptionReporter.NET](https://github.com/PandaWood/ExceptionReporter.NET) project.
+
+It had been copied, with internal attribution, from the article on [Simple-MAPI-NET](https://www.codeproject.com/Articles/2048/Simple-MAPI-NET) from the Code Project site. But I noticed that no one else had committed this code a to a repository... so, *me* to the rescue. Also I wanted my ExceptionReport.NET library to use a dependency rather than horde all this unrelated code.
