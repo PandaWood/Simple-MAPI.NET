@@ -190,3 +190,5 @@ paket-files/
 .idea/
 *.sln.iml
 
+
+*.DotSettings

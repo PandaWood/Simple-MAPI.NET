@@ -3,7 +3,6 @@ Simple MAPI.NET
 https://github.com/PandaWood/Simple-MAPI.NET
 */
 
-
 using System;
 using System.Collections;
 using System.Globalization;
@@ -11,24 +10,33 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace Win32Mapi
-{
+// ReSharper disable SuggestVarOrType_BuiltInTypes
+// ReSharper disable UnassignedField.Global
+// ReSharper disable MemberCanBePrivate.Global
+// ReSharper disable UnusedMember.Local
+// ReSharper disable UnusedMember.Global
+// ReSharper disable IdentifierTypo
+// ReSharper disable once CheckNamespace
 #pragma warning disable 1591
 
+namespace Win32Mapi
+{
 	public class SimpleMapi
 	{
 		private const int MAPI_DIALOG = 8;
 
 		#region SESSION
 
-		// ----------------------------------------------------------- SESSION ---------
+		// SESSION
 
 		public bool Logon(IntPtr hwnd)
 		{
 			winhandle = hwnd;
 			error = MAPILogon(hwnd, null, null, 0, 0, ref session);
 			if (error != 0)
+			{
 				error = MAPILogon(hwnd, null, null, MapiLogonUI, 0, ref session);
+			}
 			return error == 0;
 		}
 
@@ -76,7 +84,10 @@ namespace Win32Mapi
 				flags = MAPI_DIALOG;
 			}
 
-			lastMsg = new MapiMessage {subject = subject, noteText = noteText, originator = AllocOrigin()};
+			lastMsg = new MapiMessage
+			{
+				subject = subject, noteText = noteText, originator = AllocOrigin()
+			};
 
 			// set pointers
 			lastMsg.recips = AllocRecips(out lastMsg.recipCount);
@@ -90,13 +101,19 @@ namespace Win32Mapi
 
 		public void AddRecipient(string name, string addr, bool cc)
 		{
-			var dest = new MapiRecipDesc {recipClass = (cc ? MapiCC : MapiTO), name = name, address = addr};
+			var dest = new MapiRecipDesc
+			{
+				recipClass = cc ? MapiCC : MapiTO, name = name, address = addr
+			};
 			recpts.Add(dest);
 		}
 
 		public void AddRecipientBCC(string name, string addr)
 		{
-			var dest = new MapiRecipDesc { recipClass = MapiBCC, name = name, address = addr };
+			var dest = new MapiRecipDesc
+			{
+				recipClass = MapiBCC, name = name, address = addr
+			};
 			recpts.Add(dest);
 		}
 
@@ -125,13 +142,15 @@ namespace Win32Mapi
 		{
 			recipCount = 0;
 			if (recpts.Count == 0)
+			{
 				return IntPtr.Zero;
+			}
 
 			Type rtype = typeof (MapiRecipDesc);
 			int rsize = Marshal.SizeOf(rtype);
 			IntPtr ptrr = Marshal.AllocHGlobal(recpts.Count*rsize);
-
 			var runptr = ptrr.ToInt64();
+			
 			for (int i = 0; i < recpts.Count; i++)
 			{
 				var ptrDest = new IntPtr(runptr);
@@ -147,16 +166,24 @@ namespace Win32Mapi
 		{
 			fileCount = 0;
 			if (attachs == null)
+			{
 				return IntPtr.Zero;
-			if ((attachs.Count <= 0) || (attachs.Count > 100))
+			}
+			if (attachs.Count <= 0 || attachs.Count > 100)
+			{
 				return IntPtr.Zero;
+			}
 
 			Type atype = typeof (MapiFileDesc);
 			int asize = Marshal.SizeOf(atype);
 			IntPtr ptra = Marshal.AllocHGlobal(attachs.Count*asize);
 
-			var mfd = new MapiFileDesc {position = (-1)};
+			var mfd = new MapiFileDesc
+			{
+				position = -1
+			};
 			var runptr = ptra.ToInt64();
+			
 			for (int i = 0; i < attachs.Count; i++)
 			{
 				var path = attachs[i] as string;
@@ -216,9 +243,7 @@ namespace Win32Mapi
 		private const int MapiBCC = 3;
 
 		[DllImport("MAPI32.DLL")]
-		private static extern int MAPISendMail(IntPtr sess, IntPtr hwnd,
-		                                       MapiMessage message,
-		                                       int flg, int rsv);
+		private static extern int MAPISendMail(IntPtr sess, IntPtr hwnd, MapiMessage message, int flg, int rsv);
 
 		private MapiRecipDesc origin = new MapiRecipDesc();
 		private readonly ArrayList recpts = new ArrayList();
@@ -230,23 +255,27 @@ namespace Win32Mapi
 
 		public bool Next(ref MailEnvelop env)
 		{
-			error = MAPIFindNext(session, winhandle, null, findseed,
-			                     MapiLongMsgID, 0, lastMsgID);
+			error = MAPIFindNext(session, winhandle, null, findseed, MapiLongMsgID, 0, lastMsgID);
 			if (error != 0)
+			{
 				return false;
+			}
 			findseed = lastMsgID.ToString();
 
 			IntPtr ptrmsg = IntPtr.Zero;
-			error = MAPIReadMail(session, winhandle, findseed,
-			                     MapiEnvOnly | MapiPeek | MapiSuprAttach, 0, ref ptrmsg);
-			if ((error != 0) || (ptrmsg == IntPtr.Zero))
+			error = MAPIReadMail(session, winhandle, findseed, MapiEnvOnly | MapiPeek | MapiSuprAttach, 0, ref ptrmsg);
+			if (error != 0 || ptrmsg == IntPtr.Zero)
+			{
 				return false;
+			}
 
 			lastMsg = new MapiMessage();
 			Marshal.PtrToStructure(ptrmsg, lastMsg);
 			var orig = new MapiRecipDesc();
 			if (lastMsg.originator != IntPtr.Zero)
+			{
 				Marshal.PtrToStructure(lastMsg.originator, orig);
+			}
 
 			env.id = findseed;
 			env.date = DateTime.ParseExact(lastMsg.dateReceived, "yyyy/MM/dd HH:mm", DateTimeFormatInfo.InvariantInfo);
@@ -274,21 +303,25 @@ namespace Win32Mapi
 
 		#region READING
 
-		public string Read(string id, out MailAttach[] aat)
+		public string Read(string id, out MailAttach[] att)
 		{
-			aat = null;
-			IntPtr ptrmsg = IntPtr.Zero;
-			error = MAPIReadMail(session, winhandle, id, MapiPeek | MapiSuprAttach, 0, ref ptrmsg);
-			if ((error != 0) || (ptrmsg == IntPtr.Zero))
+			att = null;
+			IntPtr ptrMsg = IntPtr.Zero;
+			error = MAPIReadMail(session, winhandle, id, MapiPeek | MapiSuprAttach, 0, ref ptrMsg);
+			if (error != 0 || ptrMsg == IntPtr.Zero)
+			{
 				return null;
+			}
 
 			lastMsg = new MapiMessage();
-			Marshal.PtrToStructure(ptrmsg, lastMsg);
+			Marshal.PtrToStructure(ptrMsg, lastMsg);
 
-			if ((lastMsg.fileCount > 0) && (lastMsg.fileCount < 100) && (lastMsg.files != IntPtr.Zero))
-				GetAttachNames(out aat);
+			if (lastMsg.fileCount > 0 && lastMsg.fileCount < 100 && lastMsg.files != IntPtr.Zero)
+			{
+				GetAttachNames(out att);
+			}
 
-			MAPIFreeBuffer(ptrmsg);
+			MAPIFreeBuffer(ptrMsg);
 			return lastMsg.noteText;
 		}
 
@@ -298,25 +331,29 @@ namespace Win32Mapi
 			return error == 0;
 		}
 
-		public bool SaveAttachm(string id, string name, string savepath)
+		public bool SaveAttachm(string id, string name, string savePath)
 		{
-			IntPtr ptrmsg = IntPtr.Zero;
-			error = MAPIReadMail(session, winhandle, id, MapiPeek, 0, ref ptrmsg);
-			if ((error != 0) || (ptrmsg == IntPtr.Zero))
+			IntPtr ptrMsg = IntPtr.Zero;
+			error = MAPIReadMail(session, winhandle, id, MapiPeek, 0, ref ptrMsg);
+			if (error != 0 || ptrMsg == IntPtr.Zero)
+			{
 				return false;
+			}
 
 			lastMsg = new MapiMessage();
-			Marshal.PtrToStructure(ptrmsg, lastMsg);
+			Marshal.PtrToStructure(ptrMsg, lastMsg);
 			bool f = false;
-			if ((lastMsg.fileCount > 0) && (lastMsg.fileCount < 100) && (lastMsg.files != IntPtr.Zero))
-				f = SaveAttachByName(name, savepath);
-			MAPIFreeBuffer(ptrmsg);
+			if (lastMsg.fileCount > 0 && lastMsg.fileCount < 100 && lastMsg.files != IntPtr.Zero)
+			{
+				f = SaveAttachByName(name, savePath);
+			}
+			MAPIFreeBuffer(ptrMsg);
 			return f;
 		}
 
-		private void GetAttachNames(out MailAttach[] aat)
+		private void GetAttachNames(out MailAttach[] att)
 		{
-			aat = new MailAttach[lastMsg.fileCount];
+			att = new MailAttach[lastMsg.fileCount];
 			Type fdtype = typeof (MapiFileDesc);
 			int fdsize = Marshal.SizeOf(fdtype);
 			var fdtmp = new MapiFileDesc();
@@ -326,40 +363,41 @@ namespace Win32Mapi
 				var ptrDest = new IntPtr(runptr);
 				Marshal.PtrToStructure(ptrDest, fdtmp);
 				runptr += fdsize;
-				aat[i] = new MailAttach();
+				att[i] = new MailAttach();
 				if (fdtmp.flags == 0)
 				{
-					aat[i].position = fdtmp.position;
-					aat[i].name = fdtmp.name;
-					aat[i].path = fdtmp.path;
+					att[i].position = fdtmp.position;
+					att[i].name = fdtmp.name;
+					att[i].path = fdtmp.path;
 				}
 			}
 		}
 
-		private bool SaveAttachByName(string name, string savepath)
+		private bool SaveAttachByName(string name, string savePath)
 		{
 			bool f = true;
 			Type fdtype = typeof (MapiFileDesc);
 			int fdsize = Marshal.SizeOf(fdtype);
 			var fdtmp = new MapiFileDesc();
-			var runptr = lastMsg.files.ToInt64();
+			var runPtr = lastMsg.files.ToInt64();
+			
 			for (int i = 0; i < lastMsg.fileCount; i++)
 			{
-				var ptrDest = new IntPtr(runptr);
+				var ptrDest = new IntPtr(runPtr);
 				Marshal.PtrToStructure(ptrDest, fdtmp);
-				runptr += fdsize;
-				if (fdtmp.flags != 0)
-					continue;
-				if (fdtmp.name == null)
-					continue;
+				runPtr += fdsize;
+				if (fdtmp.flags != 0) continue;
+				if (fdtmp.name == null) continue;
 
 				try
 				{
 					if (name == fdtmp.name)
 					{
-						if (File.Exists(savepath))
-							File.Delete(savepath);
-						File.Move(fdtmp.path, savepath);
+						if (File.Exists(savePath))
+						{
+							File.Delete(savePath);
+						}
+						File.Move(fdtmp.path, savePath);
 					}
 				}
 				catch (Exception)
@@ -372,9 +410,11 @@ namespace Win32Mapi
 				{
 					File.Delete(fdtmp.path);
 				}
-                catch (Exception)
-                { }
-            }
+				catch (Exception)
+				{
+					// ignored
+				}
+			}
 			return f;
 		}
 
@@ -408,10 +448,11 @@ namespace Win32Mapi
 			addr = null;
 			int newrec = 0;
 			IntPtr ptrnew = IntPtr.Zero;
-			error = MAPIAddress(session, winhandle, null, 1, label, 0, IntPtr.Zero,
-			                    0, 0, ref newrec, ref ptrnew);
-			if ((error != 0) || (newrec < 1) || (ptrnew == IntPtr.Zero))
+			error = MAPIAddress(session, winhandle, null, 1, label, 0, IntPtr.Zero, 0, 0, ref newrec, ref ptrnew);
+			if (error != 0 || newrec < 1 || ptrnew == IntPtr.Zero)
+			{
 				return false;
+			}
 
 			var recip = new MapiRecipDesc();
 			Marshal.PtrToStructure(ptrnew, recip);
@@ -435,26 +476,41 @@ namespace Win32Mapi
 		public string Error()
 		{
 			if (error <= 26)
+			{
 				return errors[error];
+			}
 			return "?unknown? [" + error + "]";
 		}
 
 		private int error;
 
-		private readonly string[] errors = new[]
-		 {
-			 "OK [0]", "User abort [1]", "General MAPI failure [2]", "MAPI login failure [3]",
-			 "Disk full [4]", "Insufficient memory [5]", "Access denied [6]", "-unknown- [7]",
-			 "Too many sessions [8]", "Too many files were specified [9]",
-			 "Too many recipients were specified [10]",
-			 "A specified attachment was not found [11]",
-			 "Attachment open failure [12]", "Attachment write failure [13]",
-			 "Unknown recipient [14]", "Bad recipient type [15]",
-			 "No messages [16]", "Invalid message [17]", "Text too large [18]",
-			 "Invalid session [19]",
-			 "Type not supported [20]", "A recipient was specified ambiguously [21]",
-			 "Message in use [22]", "Network failure [23]",
-			 "Invalid edit fields [24]", "Invalid recipients [25]", "Not supported [26]"
+		private readonly string[] errors = {
+			"OK [0]", 
+			"User abort [1]", 
+			"General MAPI failure [2]", 
+			"MAPI login failure [3]",
+			"Disk full [4]", 
+			"Insufficient memory [5]", 
+			"Access denied [6]", "-unknown- [7]",
+			"Too many sessions [8]", 
+			"Too many files were specified [9]",
+			"Too many recipients were specified [10]",
+			"A specified attachment was not found [11]",
+			"Attachment open failure [12]", 
+			"Attachment write failure [13]",
+			"Unknown recipient [14]", 
+			"Bad recipient type [15]",
+			"No messages [16]", 
+			"Invalid message [17]", 
+			"Text too large [18]",
+			"Invalid session [19]",
+			"Type not supported [20]", 
+			"A recipient was specified ambiguously [21]",
+			"Message in use [22]", 
+			"Network failure [23]",
+			"Invalid edit fields [24]", 
+			"Invalid recipients [25]", 
+			"Not supported [26]"
 		 };
 
 		#endregion
@@ -521,5 +577,4 @@ namespace Win32Mapi
 		public string path;
 		public string name;
 	}
-#pragma warning restore 1591
 }
