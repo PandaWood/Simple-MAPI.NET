@@ -24,6 +24,7 @@ namespace Win32Mapi
 	public class SimpleMapi
 	{
 		private const int MAPI_DIALOG = 8;
+		private static readonly bool UseUnicode = Environment.OSVersion.Version >= new Version(6, 2);
 
 		#region SESSION
 
@@ -92,7 +93,9 @@ namespace Win32Mapi
 			// set pointers
 			lastMsg.recips = AllocRecips(out lastMsg.recipCount);
 			lastMsg.files = AllocAttachs(out lastMsg.fileCount);
-			error = MAPISendMail(session, winhandle, lastMsg, flags, 0);
+			error = UseUnicode
+				? MAPISendMailW(session, winhandle, new MapiMessageW(lastMsg), flags, 0)
+				: MAPISendMail(session, winhandle, lastMsg, flags, 0);
 
 			Dealloc();
 			Reset();
@@ -131,10 +134,13 @@ namespace Win32Mapi
 		private IntPtr AllocOrigin()
 		{
 			origin.recipClass = MapiORIG;
-			Type rtype = typeof (MapiRecipDesc);
+			Type rtype = UseUnicode ? typeof(MapiRecipDescW) : typeof (MapiRecipDesc);
 			int rsize = Marshal.SizeOf(rtype);
 			IntPtr ptro = Marshal.AllocHGlobal(rsize);
-			Marshal.StructureToPtr(origin, ptro, false);
+			if (UseUnicode)
+				Marshal.StructureToPtr(new MapiRecipDescW(origin), ptro, false);
+			else
+				Marshal.StructureToPtr(origin, ptro, false);
 			return ptro;
 		}
 
@@ -146,15 +152,18 @@ namespace Win32Mapi
 				return IntPtr.Zero;
 			}
 
-			Type rtype = typeof (MapiRecipDesc);
+			Type rtype = UseUnicode ? typeof(MapiRecipDescW) : typeof (MapiRecipDesc);
 			int rsize = Marshal.SizeOf(rtype);
 			IntPtr ptrr = Marshal.AllocHGlobal(recpts.Count*rsize);
 			var runptr = ptrr.ToInt64();
-			
+
 			for (int i = 0; i < recpts.Count; i++)
 			{
 				var ptrDest = new IntPtr(runptr);
-				Marshal.StructureToPtr(recpts[i] as MapiRecipDesc, ptrDest, false);
+				if (UseUnicode)
+					Marshal.StructureToPtr(new MapiRecipDescW(recpts[i] as MapiRecipDesc), ptrDest, false);
+				else
+					Marshal.StructureToPtr(recpts[i] as MapiRecipDesc, ptrDest, false);
 				runptr += rsize;
 			}
 
@@ -174,7 +183,7 @@ namespace Win32Mapi
 				return IntPtr.Zero;
 			}
 
-			Type atype = typeof (MapiFileDesc);
+			Type atype = UseUnicode ? typeof(MapiFileDescW) : typeof (MapiFileDesc);
 			int asize = Marshal.SizeOf(atype);
 			IntPtr ptra = Marshal.AllocHGlobal(attachs.Count*asize);
 
@@ -183,14 +192,17 @@ namespace Win32Mapi
 				position = -1
 			};
 			var runptr = ptra.ToInt64();
-			
+
 			for (int i = 0; i < attachs.Count; i++)
 			{
 				var path = attachs[i] as string;
 				mfd.name = Path.GetFileName(path);
 				mfd.path = path;
 				var ptrDest = new IntPtr(runptr);
-				Marshal.StructureToPtr(mfd, ptrDest, false);
+				if (UseUnicode)
+					Marshal.StructureToPtr(new MapiFileDescW(mfd), ptrDest, false);
+				else
+					Marshal.StructureToPtr(mfd, ptrDest, false);
 				runptr += asize;
 			}
 
@@ -200,7 +212,7 @@ namespace Win32Mapi
 
 		private void Dealloc()
 		{
-			Type rtype = typeof (MapiRecipDesc);
+			Type rtype = UseUnicode ? typeof(MapiRecipDescW) : typeof (MapiRecipDesc);
 			int rsize = Marshal.SizeOf(rtype);
 
 			if (lastMsg.originator != IntPtr.Zero)
@@ -223,7 +235,7 @@ namespace Win32Mapi
 
 			if (lastMsg.files != IntPtr.Zero)
 			{
-				Type ftype = typeof (MapiFileDesc);
+				Type ftype = UseUnicode ? typeof(MapiFileDescW) : typeof (MapiFileDesc);
 				int fsize = Marshal.SizeOf(ftype);
 
 				var runptr = lastMsg.files.ToInt64();
@@ -242,8 +254,11 @@ namespace Win32Mapi
 		private const int MapiCC = 2;
 		private const int MapiBCC = 3;
 
-		[DllImport("MAPI32.DLL")]
+		[DllImport("MAPI32.DLL", CharSet = CharSet.Ansi)]
 		private static extern int MAPISendMail(IntPtr sess, IntPtr hwnd, MapiMessage message, int flg, int rsv);
+
+		[DllImport("MAPI32.DLL", CharSet = CharSet.Unicode)]
+		private static extern int MAPISendMailW(IntPtr sess, IntPtr hwnd, MapiMessageW message, int flg, int rsv);
 
 		private MapiRecipDesc origin = new MapiRecipDesc();
 		private readonly ArrayList recpts = new ArrayList();
@@ -558,6 +573,82 @@ namespace Win32Mapi
 		public IntPtr type;
 	}
 
+// ********************************************* MAPI STRUCTURES UNICODE *********************************************
+
+	[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+	public class MapiMessageW {
+		public int reserved;
+		public string subject;
+		public string noteText;
+		public string messageType;
+		public string dateReceived;
+		public string conversationID;
+		public int flags;
+		public IntPtr originator; // MapiRecipDesc* [1]
+		public int recipCount;
+		public IntPtr recips; // MapiRecipDesc* [n]
+		public int fileCount;
+		public IntPtr files; // MapiFileDesc*  [n]
+
+		public MapiMessageW() { }
+
+		protected internal MapiMessageW(MapiMessage message) {
+			reserved = message.reserved;
+			subject = message.subject;
+			noteText = message.noteText;
+			messageType = message.messageType;
+			dateReceived = message.dateReceived;
+			conversationID = message.conversationID;
+			flags = message.flags;
+			originator = message.originator;
+			recipCount = message.recipCount;
+			recips = message.recips;
+			fileCount = message.fileCount;
+			files = message.files;
+		}
+	}
+
+	[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+	public class MapiRecipDescW {
+		public int reserved;
+		public int recipClass;
+		public string name;
+		public string address;
+		public int eIDSize;
+		public IntPtr entryID; // void*
+
+		public MapiRecipDescW() { }
+
+		protected internal MapiRecipDescW(MapiRecipDesc recipDesc) {
+			reserved = recipDesc.reserved;
+			recipClass = recipDesc.recipClass;
+			name = recipDesc.name;
+			address = recipDesc.address;
+			eIDSize = recipDesc.eIDSize;
+			entryID = recipDesc.entryID;
+		}
+	}
+
+	[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+	public class MapiFileDescW {
+		public int reserved;
+		public int flags;
+		public int position;
+		public string path;
+		public string name;
+		public IntPtr type;
+
+		public MapiFileDescW() { }
+
+		protected internal MapiFileDescW(MapiFileDesc fileDesc) {
+			reserved = fileDesc.reserved;
+			flags = fileDesc.flags;
+			position = fileDesc.position;
+			path = fileDesc.path;
+			name = fileDesc.name;
+			type = fileDesc.type;
+		}
+	}
 
 // ********************************************* HELPER STRUCTURES *********************************************
 
