@@ -24,6 +24,7 @@ namespace Win32Mapi
 	public class SimpleMapi
 	{
 		private const int MAPI_DIALOG = 8;
+		private static readonly bool UseUnicode = Environment.OSVersion.Version >= new Version(6, 2);
 
 		#region SESSION
 
@@ -92,7 +93,9 @@ namespace Win32Mapi
 			// set pointers
 			lastMsg.recips = AllocRecips(out lastMsg.recipCount);
 			lastMsg.files = AllocAttachs(out lastMsg.fileCount);
-			error = MAPISendMail(session, winhandle, lastMsg, flags, 0);
+			error = UseUnicode
+				? MAPISendMailW(session, winhandle, new MapiMessageW(lastMsg), flags, 0)
+				: MAPISendMail(session, winhandle, lastMsg, flags, 0);
 
 			Dealloc();
 			Reset();
@@ -131,10 +134,13 @@ namespace Win32Mapi
 		private IntPtr AllocOrigin()
 		{
 			origin.recipClass = MapiORIG;
-			Type rtype = typeof (MapiRecipDesc);
+			Type rtype = UseUnicode ? typeof(MapiRecipDescW) : typeof (MapiRecipDesc);
 			int rsize = Marshal.SizeOf(rtype);
 			IntPtr ptro = Marshal.AllocHGlobal(rsize);
-			Marshal.StructureToPtr(origin, ptro, false);
+			if (UseUnicode)
+				Marshal.StructureToPtr(new MapiRecipDescW(origin), ptro, false);
+			else
+				Marshal.StructureToPtr(origin, ptro, false);
 			return ptro;
 		}
 
@@ -146,15 +152,18 @@ namespace Win32Mapi
 				return IntPtr.Zero;
 			}
 
-			Type rtype = typeof (MapiRecipDesc);
+			Type rtype = UseUnicode ? typeof(MapiRecipDescW) : typeof (MapiRecipDesc);
 			int rsize = Marshal.SizeOf(rtype);
 			IntPtr ptrr = Marshal.AllocHGlobal(recpts.Count*rsize);
 			var runptr = ptrr.ToInt64();
-			
+
 			for (int i = 0; i < recpts.Count; i++)
 			{
 				var ptrDest = new IntPtr(runptr);
-				Marshal.StructureToPtr(recpts[i] as MapiRecipDesc, ptrDest, false);
+				if (UseUnicode)
+					Marshal.StructureToPtr(new MapiRecipDescW(recpts[i] as MapiRecipDesc), ptrDest, false);
+				else
+					Marshal.StructureToPtr(recpts[i] as MapiRecipDesc, ptrDest, false);
 				runptr += rsize;
 			}
 
@@ -174,7 +183,7 @@ namespace Win32Mapi
 				return IntPtr.Zero;
 			}
 
-			Type atype = typeof (MapiFileDesc);
+			Type atype = UseUnicode ? typeof(MapiFileDescW) : typeof (MapiFileDesc);
 			int asize = Marshal.SizeOf(atype);
 			IntPtr ptra = Marshal.AllocHGlobal(attachs.Count*asize);
 
@@ -183,14 +192,17 @@ namespace Win32Mapi
 				position = -1
 			};
 			var runptr = ptra.ToInt64();
-			
+
 			for (int i = 0; i < attachs.Count; i++)
 			{
 				var path = attachs[i] as string;
 				mfd.name = Path.GetFileName(path);
 				mfd.path = path;
 				var ptrDest = new IntPtr(runptr);
-				Marshal.StructureToPtr(mfd, ptrDest, false);
+				if (UseUnicode)
+					Marshal.StructureToPtr(new MapiFileDescW(mfd), ptrDest, false);
+				else
+					Marshal.StructureToPtr(mfd, ptrDest, false);
 				runptr += asize;
 			}
 
@@ -200,7 +212,7 @@ namespace Win32Mapi
 
 		private void Dealloc()
 		{
-			Type rtype = typeof (MapiRecipDesc);
+			Type rtype = UseUnicode ? typeof(MapiRecipDescW) : typeof (MapiRecipDesc);
 			int rsize = Marshal.SizeOf(rtype);
 
 			if (lastMsg.originator != IntPtr.Zero)
@@ -223,7 +235,7 @@ namespace Win32Mapi
 
 			if (lastMsg.files != IntPtr.Zero)
 			{
-				Type ftype = typeof (MapiFileDesc);
+				Type ftype = UseUnicode ? typeof(MapiFileDescW) : typeof (MapiFileDesc);
 				int fsize = Marshal.SizeOf(ftype);
 
 				var runptr = lastMsg.files.ToInt64();
@@ -242,8 +254,11 @@ namespace Win32Mapi
 		private const int MapiCC = 2;
 		private const int MapiBCC = 3;
 
-		[DllImport("MAPI32.DLL")]
+		[DllImport("MAPI32.DLL", CharSet = CharSet.Ansi)]
 		private static extern int MAPISendMail(IntPtr sess, IntPtr hwnd, MapiMessage message, int flg, int rsv);
+
+		[DllImport("MAPI32.DLL", CharSet = CharSet.Unicode)]
+		private static extern int MAPISendMailW(IntPtr sess, IntPtr hwnd, MapiMessageW message, int flg, int rsv);
 
 		private MapiRecipDesc origin = new MapiRecipDesc();
 		private readonly ArrayList recpts = new ArrayList();
@@ -513,6 +528,111 @@ namespace Win32Mapi
 			"Not supported [26]"
 		 };
 
+		public RETURN_VALUE ErrorValue => (RETURN_VALUE)error;
+
+		public enum RETURN_VALUE
+		{
+			/// <summary>
+			/// The call succeeded and the message was sent.
+			/// </summary>
+			SUCCESS_SUCCESS = 0,
+
+			/// <summary>
+			/// The user canceled one of the dialog boxes. No message was sent.
+			/// </summary>
+			MAPI_E_USER_ABORT = 1,
+
+			/// <summary>
+			/// One or more unspecified errors occurred. No message was sent.
+			/// </summary>
+			MAPI_E_FAILURE = 2,
+
+			/// <summary>
+			/// There was no default logon, and the user failed to log on successfully when the logon dialog box was displayed. No message was sent.
+			/// </summary>
+			MAPI_E_LOGIN_FAILURE = 3,
+
+			//4
+
+			/// <summary>
+			/// There was insufficient memory to proceed. No message was sent.
+			/// </summary>
+			MAPI_E_INSUFFICIENT_MEMORY = 5,
+
+			//6
+			//7
+			//8
+
+			/// <summary>
+			/// There were too many file attachments. No message was sent.
+			/// </summary>
+			MAPI_E_TOO_MANY_FILES = 9,
+
+			/// <summary>
+			/// There were too many recipients. No message was sent.
+			/// </summary>
+			MAPI_E_TOO_MANY_RECIPIENTS = 10,
+
+			/// <summary>
+			/// The specified attachment was not found. No message was sent.
+			/// </summary>
+			MAPI_E_ATTACHMENT_NOT_FOUND = 11,
+
+			/// <summary>
+			/// The specified attachment could not be opened. No message was sent.
+			/// </summary>
+			MAPI_E_ATTACHMENT_OPEN_FAILURE = 12,
+
+			//13
+
+			/// <summary>
+			/// A recipient did not appear in the address list. No message was sent.
+			/// </summary>
+			MAPI_E_UNKNOWN_RECIPIENT = 14,
+
+			/// <summary>
+			/// The type of a recipient was not MAPI_TO, MAPI_CC, or MAPI_BCC. No message was sent.
+			/// </summary>
+			MAPI_E_BAD_RECIPTYPE = 15,
+
+			//16
+			//17
+
+			/// <summary>
+			/// The text in the message was too large. No message was sent.
+			/// </summary>
+			MAPI_E_TEXT_TOO_LARGE = 18,
+
+			//19
+			//20
+
+			/// <summary>
+			/// A recipient matched more than one of the recipient descriptor structures and MAPI_DIALOG was not set. No message was sent.
+			/// </summary>
+			MAPI_E_AMBIGUOUS_RECIPIENT = 21,
+
+			//22
+			//23
+			//24
+
+			/// <summary>
+			/// One or more recipients were invalid or did not resolve to any address.
+			/// </summary>
+			MAPI_E_INVALID_RECIPS = 25,
+
+			//26
+
+			/// <summary>
+			/// The MAPI_FORCE_UNICODE flag is specified and Unicode is not supported. Note: This value can be returned by MAPISendMailW only.
+			/// </summary>
+			MAPI_E_UNICODE_NOT_SUPPORTED = 27,
+
+			/// <summary>
+			/// The specified attachment was too large. No message was sent.
+			/// </summary>
+			MAPI_E_ATTACHMENT_TOO_LARGE = 28
+		}
+
 		#endregion
 	}
 
@@ -558,6 +678,82 @@ namespace Win32Mapi
 		public IntPtr type;
 	}
 
+// ********************************************* MAPI STRUCTURES UNICODE *********************************************
+
+	[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+	public class MapiMessageW {
+		public int reserved;
+		public string subject;
+		public string noteText;
+		public string messageType;
+		public string dateReceived;
+		public string conversationID;
+		public int flags;
+		public IntPtr originator; // MapiRecipDesc* [1]
+		public int recipCount;
+		public IntPtr recips; // MapiRecipDesc* [n]
+		public int fileCount;
+		public IntPtr files; // MapiFileDesc*  [n]
+
+		public MapiMessageW() { }
+
+		protected internal MapiMessageW(MapiMessage message) {
+			reserved = message.reserved;
+			subject = message.subject;
+			noteText = message.noteText;
+			messageType = message.messageType;
+			dateReceived = message.dateReceived;
+			conversationID = message.conversationID;
+			flags = message.flags;
+			originator = message.originator;
+			recipCount = message.recipCount;
+			recips = message.recips;
+			fileCount = message.fileCount;
+			files = message.files;
+		}
+	}
+
+	[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+	public class MapiRecipDescW {
+		public int reserved;
+		public int recipClass;
+		public string name;
+		public string address;
+		public int eIDSize;
+		public IntPtr entryID; // void*
+
+		public MapiRecipDescW() { }
+
+		protected internal MapiRecipDescW(MapiRecipDesc recipDesc) {
+			reserved = recipDesc.reserved;
+			recipClass = recipDesc.recipClass;
+			name = recipDesc.name;
+			address = recipDesc.address;
+			eIDSize = recipDesc.eIDSize;
+			entryID = recipDesc.entryID;
+		}
+	}
+
+	[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+	public class MapiFileDescW {
+		public int reserved;
+		public int flags;
+		public int position;
+		public string path;
+		public string name;
+		public IntPtr type;
+
+		public MapiFileDescW() { }
+
+		protected internal MapiFileDescW(MapiFileDesc fileDesc) {
+			reserved = fileDesc.reserved;
+			flags = fileDesc.flags;
+			position = fileDesc.position;
+			path = fileDesc.path;
+			name = fileDesc.name;
+			type = fileDesc.type;
+		}
+	}
 
 // ********************************************* HELPER STRUCTURES *********************************************
 
