@@ -28,7 +28,7 @@ Microsoft warns that the [use of Simple MAPI is discouraged and that it may be u
 But it's the only way, I know, to invoke the default Email
 client and set subject/body and attachments on Windows.
 
-It still works on Windows 10 and we'll keep using it until it stops.
+It still works on Windows 10, with Outlook as the email client.
 
 ## How to use
 
