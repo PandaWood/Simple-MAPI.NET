@@ -1,11 +1,11 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
     <ProjectGuid>{3C2D628F-1F61-40EE-86CA-A8B0CD6E8438}</ProjectGuid>
     <OutputType>Exe</OutputType>
-    <AssemblyName>Console-Demo</AssemblyName>
+    <AssemblyName>SimpleMapi-Demo</AssemblyName>
     <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
     <Description>Quick demo of the main Simple-MAPI.NET library</Description>
     <SynchReleaseVersion>false</SynchReleaseVersion>
@@ -29,6 +29,9 @@
     <ExternalConsole>true</ExternalConsole>
     <PlatformTarget>x86</PlatformTarget>
   </PropertyGroup>
+  <PropertyGroup>
+    <RootNamespace>SimpleMapi.Demo</RootNamespace>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
   </ItemGroup>
@@ -37,9 +40,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Mapi\Simple-Mapi.csproj">
-      <Project>{32F7B95D-10A0-4A0A-AF04-DFB1CA7C7E43}</Project>
-      <Name>Simple-Mapi</Name>
+    <ProjectReference Include="..\..\Mapi\SimpleMapi.SDK.csproj">
+      <Project>{f35b5a9a-57eb-438a-a5d0-adc4ee9a8343}</Project>
+      <Name>SimpleMapi.SDK</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

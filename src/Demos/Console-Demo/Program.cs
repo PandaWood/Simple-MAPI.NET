@@ -4,33 +4,37 @@ https://github.com/PandaWood/Simple-MAPI.NET
 *******************************************************/
 
 using System;
-using Win32Mapi;
 
-namespace SimpleMAPI
+namespace SimpleMapi.Demo
 {
 	class SimpleMapiDemo
 	{
 		[STAThread]
 		static void Main(string[] args)
 		{
-			if ((args == null) || (args.Length < 3))
+			if (args == null || args.Length < 3)
 			{
-				Console.WriteLine("SimpleMAPI Console syntax :\n\tConsole-Demo recip@any.org subject text");
+				Console.WriteLine("SimpleMAPI Console syntax: ");
+				Console.WriteLine("\tSimpleMapi-Demo [email] [subject] [body] [file to attach]");
+				Console.WriteLine("\teg SimpleMapi-Demo test@gmail.com 'the subject' 'body' 'c:/test.log'");
 				return;
 			}
 
-			SimpleMapi ma = new SimpleMapi();
-			//!ma.Logon(IntPtr.Zero)		// this code is strictly correct, but won't work with Outlook 64-bit and is needed in the most common usage
+			var simpleMapi = new Win32Mapi.SimpleMapi();
+			simpleMapi.AddRecipient(args[2], null, false);
 
-			ma.AddRecipient(args[0], null, false);
-			if (!ma.Send(args[1], args[2]))
+			if (args.Length > 3)
 			{
-				Console.WriteLine("MAPI SendMail failed! : " + ma.Error());
-				return;
+				simpleMapi.Attach(args[3]);
 			}
 
-			//ma.Logoff();
-			Console.WriteLine("SimpleMAPI Console: email sent successfully.");
+			if (!simpleMapi.Send(args[1], args[2]))
+			{
+				Console.WriteLine("MAPI SendMail failed: " + simpleMapi.Error());
+				return;
+			}
+		
+			Console.WriteLine("SimpleMAPI Console: email sent.");
 		}
 	}
 }

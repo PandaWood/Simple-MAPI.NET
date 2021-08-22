@@ -1,0 +1,41 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net20;net40</TargetFrameworks>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <PackageId>Simple-MAPI.NET</PackageId>
+    <Version>1.2.0</Version>
+    <Authors>Peter van der Woude</Authors>
+    <Product>Simple-Mapi.NET</Product>
+    <Description>A .NET wrapper around Simple MAPI - a set of functions and related data structures to add messaging functionality to Windows-based apps</Description>
+    <PackageReleaseNotes>Functional: 
+- add unicode support
+API:
+- public access to the Error property</PackageReleaseNotes>
+    <Company />
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <PackageTags>mapi, simple-mapi</PackageTags>
+    <PackageProjectUrl>https://github.com/PandaWood/Simple-MAPI.NET</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/PandaWood/Simple-MAPI.NET</RepositoryUrl>
+    <AssemblyName>SimpleMapi.NET</AssemblyName>
+    <RootNamespace>SimpleMapi</RootNamespace>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFrameworks)|$(Platform)'=='Debug|net20|AnyCPU'">
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Properties\**" />
+    <EmbeddedResource Remove="Properties\**" />
+    <None Remove="Properties\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\LICENSE">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
+  </ItemGroup>
+
+</Project>
