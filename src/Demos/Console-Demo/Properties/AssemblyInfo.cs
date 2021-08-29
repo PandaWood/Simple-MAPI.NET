@@ -4,8 +4,8 @@ using System.Runtime.CompilerServices;
 // Information about this assembly is defined by the following attributes. 
 // Change them to the values specific to your project.
 
-[assembly: AssemblyTitle("Console-Demo")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyTitle("Simple-MAPI.NET Console Demo")]
+[assembly: AssemblyDescription("Runs Simple-MAPI library with a few basic inputs to test")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("")]
