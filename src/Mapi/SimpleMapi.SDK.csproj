@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFrameworks>net20;net40</TargetFrameworks>
@@ -11,7 +11,8 @@
     <PackageReleaseNotes>Functional: 
 - add unicode support
 API:
-- public access to the Error property</PackageReleaseNotes>
+- public access to the Error property
+- Added multiple targets to nuget package (net20 and net40)</PackageReleaseNotes>
     <Company />
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <PackageTags>mapi, simple-mapi</PackageTags>
