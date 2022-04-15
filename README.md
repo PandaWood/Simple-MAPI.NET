@@ -44,7 +44,7 @@ mapi.Send(subject: "a subject", noteText: "a body text");
 ```
 
 I don't use Logon/off() because it used to cause issues (only in 64-bit Office/Outlook)
-and showed a superflous error but sent anyway - but it's I may need to revisit that choice.
+and showed a superflous error but sent anyway - but I may need to revisit that choice.
 
 ## History
 
