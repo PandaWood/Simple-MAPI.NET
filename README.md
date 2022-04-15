@@ -26,13 +26,13 @@ Simple MAPI is an old technology and it's basically deprecated -
 Microsoft warns that the [use of Simple MAPI is discouraged and that it may be unavailable in later versions of Windows](https://msdn.microsoft.com/en-us/library/windows/desktop/dd296734(v=vs.85).aspx)
 
 But it's the only way, I know, to invoke the default Email
-client and set subject/body and attachments on Windows.
+client and set subject/body and attachments on Windows without using interops or anything Office-specific. Simple MAPI is just a set of functions and related data structures, in Windows, that this library calls.
 
 It still works on Windows 10, with Outlook as the email client.
 
 ## How to use
 
-I have used it, with success, like this (no logon/logoff)
+I have used it, with success, like this:
 ```
 using Win32Mapi;
 
@@ -43,9 +43,8 @@ mapi.Attach(filepath: "c:\\bob.txt");
 mapi.Send(subject: "a subject", noteText: "a body text");
 ```
 
-I don't use Logon/off() because at least in one case (64-bit Office/Outlook)
-it just creates a superflous error but sends anyway - ie removing the call
-to Logon() still works.
+I don't use Logon/off() because it used to cause issues (only in 64-bit Office/Outlook)
+and showed a superflous error but sent anyway - but it's I may need to revisit that choice.
 
 ## History
 
