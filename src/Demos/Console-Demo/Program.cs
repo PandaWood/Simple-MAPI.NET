@@ -34,7 +34,7 @@ namespace SimpleMapi.Demo
 				return;
 			}
 		
-			Console.WriteLine("SimpleMAPI Console: email sent.");
+			Console.WriteLine("SimpleMAPI Console: email created.");
 		}
 	}
 }
