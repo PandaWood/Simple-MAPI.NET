@@ -1,6 +1,6 @@
 # Simple-MAPI.NET
 This project originated from the article
-[Simple-MAPI-NET](https://www.codeproject.com/Articles/2048/Simple-MAPI-NET)
+[Simple-MAPI-NET](https://web.archive.org/web/20241228042717/https://www.codeproject.com/Articles/2048/Simple-MAPI-NET)
 on CodeProject site. There has been a few important fixes in this project
 since the original was imported.
 
