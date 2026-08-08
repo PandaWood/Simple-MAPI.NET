@@ -21,7 +21,7 @@ namespace SimpleMapi.Demo
 			}
 
 			var simpleMapi = new Win32Mapi.SimpleMapi();
-			simpleMapi.AddRecipient(args[2], null, false);
+			simpleMapi.AddRecipient(args[0], null, false);
 
 			if (args.Length > 3)
 			{

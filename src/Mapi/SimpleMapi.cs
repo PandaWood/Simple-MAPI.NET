@@ -24,7 +24,11 @@ namespace Win32Mapi
 	public class SimpleMapi
 	{
 		private const int MAPI_DIALOG = 8;
-		private static readonly bool UseUnicode = Environment.OSVersion.Version >= new Version(6, 2);
+		private static readonly bool UnicodeSupported = Environment.OSVersion.Version >= new Version(6, 2);
+
+		// Starts from the OS check above, but latches to false for the rest of this
+		// instance's life if the mail client rejects the Unicode call - see Send.
+		private bool useUnicode = UnicodeSupported;
 
 		#region SESSION
 
@@ -78,6 +82,14 @@ namespace Win32Mapi
 
 		public bool Send(string subject, string noteText, bool ShowDialog = true)
 		{
+			// Fail loudly rather than silently sending a message with no attachments.
+			if (attachs.Count > MaxAttachments)
+			{
+				error = MapiTooManyFiles;
+				Reset();
+				return false;
+			}
+
 			int flags = 0;
 
 			if (ShowDialog)
@@ -85,6 +97,29 @@ namespace Win32Mapi
 				flags = MAPI_DIALOG;
 			}
 
+			try
+			{
+				error = SendOnce(subject, noteText, flags);
+
+				// A client can look Unicode-capable by OS version yet still reject the
+				// Unicode call. Rebuild the message as ANSI and try once more - the
+				// structures have to be re-marshalled, they can't just be reused.
+				if (error == MapiUnicodeNotSupported && useUnicode)
+				{
+					useUnicode = false;
+					error = SendOnce(subject, noteText, flags);
+				}
+			}
+			finally
+			{
+				Reset();
+			}
+
+			return error == 0;
+		}
+
+		private int SendOnce(string subject, string noteText, int flags)
+		{
 			lastMsg = new MapiMessage
 			{
 				subject = subject, noteText = noteText, originator = AllocOrigin()
@@ -93,13 +128,19 @@ namespace Win32Mapi
 			// set pointers
 			lastMsg.recips = AllocRecips(out lastMsg.recipCount);
 			lastMsg.files = AllocAttachs(out lastMsg.fileCount);
-			error = UseUnicode
-				? MAPISendMailW(session, winhandle, new MapiMessageW(lastMsg), flags, 0)
-				: MAPISendMail(session, winhandle, lastMsg, flags, 0);
 
-			Dealloc();
-			Reset();
-			return error == 0;
+			try
+			{
+				return useUnicode
+					? MAPISendMailW(session, winhandle, new MapiMessageW(lastMsg), flags, 0)
+					: MAPISendMail(session, winhandle, lastMsg, flags, 0);
+			}
+			finally
+			{
+				// Must run even if the P/Invoke throws, or three AllocHGlobal
+				// blocks are stranded. Uses the same useUnicode as the alloc did.
+				Dealloc();
+			}
 		}
 
 		public void AddRecipient(string name, string addr, bool cc)
@@ -134,10 +175,10 @@ namespace Win32Mapi
 		private IntPtr AllocOrigin()
 		{
 			origin.recipClass = MapiORIG;
-			Type rtype = UseUnicode ? typeof(MapiRecipDescW) : typeof (MapiRecipDesc);
+			Type rtype = useUnicode ? typeof(MapiRecipDescW) : typeof (MapiRecipDesc);
 			int rsize = Marshal.SizeOf(rtype);
 			IntPtr ptro = Marshal.AllocHGlobal(rsize);
-			if (UseUnicode)
+			if (useUnicode)
 				Marshal.StructureToPtr(new MapiRecipDescW(origin), ptro, false);
 			else
 				Marshal.StructureToPtr(origin, ptro, false);
@@ -152,7 +193,7 @@ namespace Win32Mapi
 				return IntPtr.Zero;
 			}
 
-			Type rtype = UseUnicode ? typeof(MapiRecipDescW) : typeof (MapiRecipDesc);
+			Type rtype = useUnicode ? typeof(MapiRecipDescW) : typeof (MapiRecipDesc);
 			int rsize = Marshal.SizeOf(rtype);
 			IntPtr ptrr = Marshal.AllocHGlobal(recpts.Count*rsize);
 			var runptr = ptrr.ToInt64();
@@ -160,7 +201,7 @@ namespace Win32Mapi
 			for (int i = 0; i < recpts.Count; i++)
 			{
 				var ptrDest = new IntPtr(runptr);
-				if (UseUnicode)
+				if (useUnicode)
 					Marshal.StructureToPtr(new MapiRecipDescW(recpts[i] as MapiRecipDesc), ptrDest, false);
 				else
 					Marshal.StructureToPtr(recpts[i] as MapiRecipDesc, ptrDest, false);
@@ -178,12 +219,13 @@ namespace Win32Mapi
 			{
 				return IntPtr.Zero;
 			}
-			if (attachs.Count <= 0 || attachs.Count > 100)
+			// The upper bound is enforced by Send, which reports MapiTooManyFiles.
+			if (attachs.Count <= 0)
 			{
 				return IntPtr.Zero;
 			}
 
-			Type atype = UseUnicode ? typeof(MapiFileDescW) : typeof (MapiFileDesc);
+			Type atype = useUnicode ? typeof(MapiFileDescW) : typeof (MapiFileDesc);
 			int asize = Marshal.SizeOf(atype);
 			IntPtr ptra = Marshal.AllocHGlobal(attachs.Count*asize);
 
@@ -199,7 +241,7 @@ namespace Win32Mapi
 				mfd.name = Path.GetFileName(path);
 				mfd.path = path;
 				var ptrDest = new IntPtr(runptr);
-				if (UseUnicode)
+				if (useUnicode)
 					Marshal.StructureToPtr(new MapiFileDescW(mfd), ptrDest, false);
 				else
 					Marshal.StructureToPtr(mfd, ptrDest, false);
@@ -212,7 +254,7 @@ namespace Win32Mapi
 
 		private void Dealloc()
 		{
-			Type rtype = UseUnicode ? typeof(MapiRecipDescW) : typeof (MapiRecipDesc);
+			Type rtype = useUnicode ? typeof(MapiRecipDescW) : typeof (MapiRecipDesc);
 			int rsize = Marshal.SizeOf(rtype);
 
 			if (lastMsg.originator != IntPtr.Zero)
@@ -235,7 +277,7 @@ namespace Win32Mapi
 
 			if (lastMsg.files != IntPtr.Zero)
 			{
-				Type ftype = UseUnicode ? typeof(MapiFileDescW) : typeof (MapiFileDesc);
+				Type ftype = useUnicode ? typeof(MapiFileDescW) : typeof (MapiFileDesc);
 				int fsize = Marshal.SizeOf(ftype);
 
 				var runptr = lastMsg.files.ToInt64();
@@ -253,6 +295,10 @@ namespace Win32Mapi
 		private const int MapiTO = 1;
 		private const int MapiCC = 2;
 		private const int MapiBCC = 3;
+
+		private const int MaxAttachments = 100;
+		private const int MapiTooManyFiles = 9;
+		private const int MapiUnicodeNotSupported = 27;
 
 		[DllImport("MAPI32.DLL", CharSet = CharSet.Ansi)]
 		private static extern int MAPISendMail(IntPtr sess, IntPtr hwnd, MapiMessage message, int flg, int rsv);
@@ -293,7 +339,18 @@ namespace Win32Mapi
 			}
 
 			env.id = findseed;
-			env.date = DateTime.ParseExact(lastMsg.dateReceived, "yyyy/MM/dd HH:mm", DateTimeFormatInfo.InvariantInfo);
+
+			// Clients don't all agree on this format, and it can come back null.
+			// A bad date shouldn't throw or abandon the enumeration - the rest of
+			// the envelope is still good - so fall back to a MinValue sentinel.
+			DateTime received;
+			if (!DateTime.TryParseExact(lastMsg.dateReceived, "yyyy/MM/dd HH:mm",
+				    DateTimeFormatInfo.InvariantInfo, DateTimeStyles.None, out received))
+			{
+				received = DateTime.MinValue;
+			}
+			env.date = received;
+
 			env.subject = lastMsg.subject;
 			env.from = orig.name;
 			env.unread = (lastMsg.flags & MapiUnread) != 0;
@@ -390,12 +447,13 @@ namespace Win32Mapi
 
 		private bool SaveAttachByName(string name, string savePath)
 		{
-			bool f = true;
+			bool found = false;
+			bool saved = true;
 			Type fdtype = typeof (MapiFileDesc);
 			int fdsize = Marshal.SizeOf(fdtype);
 			var fdtmp = new MapiFileDesc();
 			var runPtr = lastMsg.files.ToInt64();
-			
+
 			for (int i = 0; i < lastMsg.fileCount; i++)
 			{
 				var ptrDest = new IntPtr(runPtr);
@@ -408,6 +466,9 @@ namespace Win32Mapi
 				{
 					if (name == fdtmp.name)
 					{
+						// Set before the file operations, so a failure to write is
+						// reported as a write failure rather than as "not found".
+						found = true;
 						if (File.Exists(savePath))
 						{
 							File.Delete(savePath);
@@ -417,8 +478,8 @@ namespace Win32Mapi
 				}
 				catch (Exception)
 				{
-					f = false;
-					error = 13;
+					saved = false;
+					error = MapiAttachWriteFailure;
 				}
 
 				try
@@ -430,7 +491,16 @@ namespace Win32Mapi
 					// ignored
 				}
 			}
-			return f;
+
+			// Reporting success for an attachment that was never there hides the
+			// caller's mistake - a wrong name now fails, like any other error.
+			if (!found)
+			{
+				error = MapiAttachNotFound;
+				return false;
+			}
+
+			return saved;
 		}
 
 		[DllImport("MAPI32.DLL", CharSet = CharSet.Ansi)]
@@ -441,6 +511,9 @@ namespace Win32Mapi
 
 		[DllImport("MAPI32.DLL", CharSet = CharSet.Ansi)]
 		private static extern int MAPIDeleteMail(IntPtr sess, IntPtr hwnd, string id, int flg, int rsv);
+
+		private const int MapiAttachNotFound = 11;
+		private const int MapiAttachWriteFailure = 13;
 
 		private const int MapiPeek = 0x00000080;
 		private const int MapiSuprAttach = 0x00000800;
@@ -490,7 +563,7 @@ namespace Win32Mapi
 
 		public string Error()
 		{
-			if (error <= 26)
+			if (error >= 0 && error < errors.Length)
 			{
 				return errors[error];
 			}
@@ -523,9 +596,11 @@ namespace Win32Mapi
 			"A recipient was specified ambiguously [21]",
 			"Message in use [22]", 
 			"Network failure [23]",
-			"Invalid edit fields [24]", 
-			"Invalid recipients [25]", 
-			"Not supported [26]"
+			"Invalid edit fields [24]",
+			"Invalid recipients [25]",
+			"Not supported [26]",
+			"Unicode not supported [27]",
+			"Attachment too large [28]"
 		 };
 
 		public RETURN_VALUE ErrorValue => (RETURN_VALUE)error;
