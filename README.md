@@ -1,6 +1,6 @@
 # Simple-MAPI.NET
-This project originated from the article
-[Simple-MAPI-NET](https://web.archive.org/web/20241228042717/https://www.codeproject.com/Articles/2048/Simple-MAPI-NET)
+This project originated from the 
+[Simple-MAPI-NET article](https://web.archive.org/web/20241228042717/https://www.codeproject.com/Articles/2048/Simple-MAPI-NET)
 on CodeProject site. There has been a few important fixes in this project
 since the original was imported.
 
@@ -45,6 +45,14 @@ mapi.Send(subject: "a subject", noteText: "a body text");
 
 I don't use Logon/off() because it used to cause issues (only in 64-bit Office/Outlook)
 and showed a superflous error but sent anyway - but I may need to revisit that choice.
+
+## Building
+
+```
+dotnet build src/Mapi/SimpleMapi.SDK.csproj
+```
+
+Cutting a release is described in [RELEASING.md](RELEASING.md).
 
 ## History
 

@@ -1,19 +1,22 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net20;net40;netstandard2.0;net6.0-windows</TargetFrameworks>
-    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <TargetFrameworks>net20;net40;netstandard2.0;net8.0-windows</TargetFrameworks>
+    <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
+    <PackageOutputPath>$(MSBuildThisFileDirectory)..\..\artifacts</PackageOutputPath>
     <PackageId>Simple-MAPI.NET</PackageId>
-    <Version>1.2.1</Version>
+    <Version>1.2.2</Version>
     <Authors>Peter van der Woude</Authors>
     <Product>Simple-Mapi.NET</Product>
     <Description>A .NET wrapper around Simple MAPI - a set of functions and related data structures to add messaging functionality to Windows-based apps</Description>
-    <PackageReleaseNotes>add framework support for netstandard2 and net6 windows</PackageReleaseNotes>
+    <PackageReleaseNotes>replace the end-of-life net6.0-windows target with net8.0-windows - no functional change</PackageReleaseNotes>
     <Company />
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageTags>mapi, simple-mapi</PackageTags>
     <PackageProjectUrl>https://github.com/PandaWood/Simple-MAPI.NET</PackageProjectUrl>
     <RepositoryUrl>https://github.com/PandaWood/Simple-MAPI.NET</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
     <AssemblyName>SimpleMapi.NET</AssemblyName>
     <RootNamespace>SimpleMapi</RootNamespace>
     <RunAnalyzersDuringBuild>False</RunAnalyzersDuringBuild>
@@ -25,13 +28,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Properties\**" />
-    <EmbeddedResource Remove="Properties\**" />
-    <None Remove="Properties\**" />
-  </ItemGroup>
-
-  <ItemGroup>
     <None Include="..\..\LICENSE">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
+    <None Include="..\..\README.md">
       <Pack>True</Pack>
       <PackagePath></PackagePath>
     </None>

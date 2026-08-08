@@ -192,3 +192,17 @@ paket-files/
 
 
 *.DotSettings
+
+# AI assistant instruction/config files - local tooling, not part of the project
+CLAUDE.md
+CLAUDE.local.md
+.claude/
+AGENTS.md
+GEMINI.md
+.gemini/
+.codex/
+.cursor/
+.cursorrules
+.aider*
+.github/copilot-instructions.md
+.github/instructions/
