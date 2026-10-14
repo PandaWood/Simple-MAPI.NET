@@ -157,6 +157,9 @@ namespace ManualTests
 			Header("5. cancelling the compose window reports user abort");
 
 			Console.WriteLine("CLOSE the next window WITHOUT sending.");
+			Console.WriteLine("Only meaningful with a client whose MAPI call blocks until the window is");
+			Console.WriteLine("closed (Outlook). Thunderbird returns success as soon as the window opens,");
+			Console.WriteLine("so both checks below will fail against it - that is the client, not the library.");
 			Pause();
 
 			var mapi = new SimpleMapi();
@@ -167,6 +170,12 @@ namespace ManualTests
 			Check("error is MAPI_E_USER_ABORT",
 				mapi.ErrorValue == SimpleMapi.RETURN_VALUE.MAPI_E_USER_ABORT,
 				mapi.Error());
+
+			if (sent)
+			{
+				Console.WriteLine("    Send returned true before the window was closed, so this client does");
+				Console.WriteLine("    not block. Re-run this test against Outlook to exercise the abort path.");
+			}
 		}
 
 		// ---- plumbing ----------------------------------------------------------
